@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS rents;
+DROP TABLE IF EXISTS clients;
+DROP TABLE IF EXISTS telegram_users;
+DROP TYPE IF EXISTS payment_currency;
+DROP TYPE IF EXISTS payment_status;
+DROP EXTENSION IF EXISTS "uuid-ossp";

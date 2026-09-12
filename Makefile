@@ -2,7 +2,7 @@
 
 APP_NAME    = studio-api
 BUILD_DIR   = ./bin
-MIGRATE_URL = postgres://studio:studio@localhost:5432/studio_db?sslmode=disable
+MIGRATE_URL = postgres://studio:studio@localhost:35433/studio_db?sslmode=disable
 MIGRATE_DIR = ./migrations
 
 run:

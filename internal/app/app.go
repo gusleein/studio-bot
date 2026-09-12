@@ -45,7 +45,7 @@ func (a *App) initDeps(ctx context.Context) {
 	inits := []func(context.Context) error{
 		a.initConfig,
 		a.initDB,
-		a.runMigrations,
+		//a.runMigrations,
 		a.initServiceProvider,
 		a.initBot,
 	}
