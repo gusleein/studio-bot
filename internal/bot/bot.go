@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
@@ -25,7 +26,9 @@ func New(
 	debug bool,
 	timeout int,
 	clients service.ClientService,
+	rents service.RentService,
 	logger *logger.Logger,
+	settings Settings,
 ) (*Bot, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
@@ -38,6 +41,11 @@ func New(
 	templatesDir := filepath.Join(projectRoot, "internal/bot/templates")
 	botviewRenderer := botview.New(templatesDir)
 
+	loc, err := time.LoadLocation(settings.Location)
+	if err != nil {
+		loc = time.FixedZone("UTC", 0)
+	}
+
 	return &Bot{
 		l:       logger,
 		Bot:     bot,
@@ -45,8 +53,11 @@ func New(
 		handler: NewHandler(
 			bot,
 			clients,
+			rents,
 			logger,
 			botviewRenderer,
+			settings,
+			loc,
 		),
 	}, nil
 }

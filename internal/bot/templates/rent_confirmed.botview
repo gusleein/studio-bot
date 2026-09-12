@@ -1,0 +1,10 @@
+@props RentConfirmedProps
+
+@template
+✅ <b>Аренда подтверждена</b>
+
+📅 {DateLabel}
+🕐 {TimeRange}
+⏱ {HoursLabel}
+
+Ждём вас в студии.

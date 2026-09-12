@@ -1,0 +1,14 @@
+@props RentAdminConfirmProps
+
+@template
+❌ <b>Оплата отменена</b>
+
+Клиент: <b>{ClientName}</b>
+{#if Username} @{Username}{/if}
+
+Телефон: {Phone}
+
+📅 {DateLabel}
+🕐 {TimeRange}
+⏱ {HoursLabel}
+💰 {Amount}

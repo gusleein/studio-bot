@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -29,6 +30,8 @@ type ClientRepository interface {
 type RentRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Rent, error)
 	ListByClientID(ctx context.Context, clientID uuid.UUID) ([]*domain.Rent, error)
+	GetUpcomingByClientID(ctx context.Context, clientID uuid.UUID, from time.Time) (*domain.Rent, error)
+	ListActiveInRange(ctx context.Context, from, to time.Time) ([]*domain.Rent, error)
 	Create(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
 	Update(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
 }

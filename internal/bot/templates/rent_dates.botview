@@ -1,0 +1,16 @@
+@props RentDatesProps
+
+@template
+📅 <b>Выберите дату</b>
+
+Ближайшие 7 дней:
+
+@keyboard
+{#each Days as day}
+[row]
+[btn callback="{day.Callback}"] {day.Label} [/btn]
+[/row]
+{/each}
+[row]
+[btn callback="rent:menu"] ◀ В меню [/btn]
+[/row]

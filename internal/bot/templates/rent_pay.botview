@@ -1,0 +1,20 @@
+@props RentPayProps
+
+@template
+💳 <b>Оплата аренды</b>
+
+📅 {DateLabel}
+🕐 {TimeRange}
+⏱ {HoursLabel}
+💰 К оплате: <b>{Amount}</b>
+
+Переведите сумму на карту:
+
+<code>{CardNumber}</code>
+
+После оплаты отправьте в этот чат <b>скриншот или чек</b> (фото или файл).
+
+@keyboard
+[row]
+[btn callback="rent:menu"] ❌ Отмена [/btn]
+[/row]

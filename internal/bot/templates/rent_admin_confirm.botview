@@ -1,0 +1,24 @@
+@props RentAdminConfirmProps
+
+@template
+🧾 <b>Чек на аренду</b>
+
+Клиент: <b>{ClientName}</b>
+{#if Username} @{Username}{/if}
+
+Телефон: {Phone}
+
+📅 {DateLabel}
+🕐 {TimeRange}
+⏱ {HoursLabel}
+💰 {Amount}
+
+Подтвердите оплату, чтобы закрепить бронь.
+
+@keyboard
+[row]
+[btn callback="{ConfirmCallback}"] ✅ Подтвердить [/btn]
+[/row]
+[row]
+[btn callback="{CancelCallback}"] ❌ Отменить [/btn]
+[/row]

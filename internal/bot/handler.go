@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.uber.org/zap"
@@ -11,25 +12,46 @@ import (
 	"github.com/yourstudio/studio-bot/pkg/logger"
 )
 
+// Settings — параметры клиентской аренды.
+type Settings struct {
+	AdminChatID   int64
+	CardNumber    string
+	PricePerHour  int
+	AdminPhone    string
+	AdminUsername string
+	Location      string
+}
+
 // Handler — основной обработчик обновлений Telegram-бота.
 type Handler struct {
 	bot      *tgbotapi.BotAPI
 	clients  service.ClientService
+	rents    service.RentService
 	log      *logger.Logger
 	renderer *botview.Renderer
+	sessions *sessionStore
+	settings Settings
+	loc      *time.Location
 }
 
 func NewHandler(
 	bot *tgbotapi.BotAPI,
 	clients service.ClientService,
+	rents service.RentService,
 	log *logger.Logger,
 	renderer *botview.Renderer,
+	settings Settings,
+	loc *time.Location,
 ) *Handler {
 	return &Handler{
 		bot:      bot,
 		clients:  clients,
+		rents:    rents,
 		log:      log,
 		renderer: renderer,
+		sessions: newSessionStore(),
+		settings: settings,
+		loc:      loc,
 	}
 }
 

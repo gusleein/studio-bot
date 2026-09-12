@@ -43,6 +43,23 @@ const (
 		WHERE client_id = $1
 		ORDER BY starts_at DESC`
 
+	getUpcomingByClientIDQuery = `
+		SELECT` + rentColumns + `
+		FROM rents
+		WHERE client_id = $1
+			AND is_cancelled = FALSE
+			AND starts_at >= $2
+		ORDER BY starts_at ASC
+		LIMIT 1`
+
+	listActiveInRangeQuery = `
+		SELECT` + rentColumns + `
+		FROM rents
+		WHERE is_cancelled = FALSE
+			AND starts_at < $2
+			AND COALESCE(ends_at, starts_at) > $1
+		ORDER BY starts_at ASC`
+
 	updateQuery = `
 		UPDATE rents
 		SET
@@ -106,6 +123,34 @@ func (r *Repo) ListByClientID(ctx context.Context, clientID uuid.UUID) ([]*domai
 	var rows []model.RentModel
 	if err := db.SelectContext(ctx, &rows, listByClientIDQuery, clientID); err != nil {
 		return nil, errors.Wrap(err, "list rents by client_id")
+	}
+
+	result := make([]*domain.Rent, len(rows))
+	for i := range rows {
+		result[i] = converter.ToDomain(&rows[i])
+	}
+	return result, nil
+}
+
+func (r *Repo) GetUpcomingByClientID(ctx context.Context, clientID uuid.UUID, from time.Time) (*domain.Rent, error) {
+	db := database.GetDB(ctx, r.db)
+
+	var m model.RentModel
+	if err := db.GetContext(ctx, &m, getUpcomingByClientIDQuery, clientID, from); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, errors.Wrap(err, "get upcoming rent by client_id")
+	}
+	return converter.ToDomain(&m), nil
+}
+
+func (r *Repo) ListActiveInRange(ctx context.Context, from, to time.Time) ([]*domain.Rent, error) {
+	db := database.GetDB(ctx, r.db)
+
+	var rows []model.RentModel
+	if err := db.SelectContext(ctx, &rows, listActiveInRangeQuery, from, to); err != nil {
+		return nil, errors.Wrap(err, "list active rents in range")
 	}
 
 	result := make([]*domain.Rent, len(rows))

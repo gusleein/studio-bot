@@ -1,0 +1,13 @@
+@props RentConfirmedProps
+
+@template
+❌ <b>Аренда не подтверждена</b>
+
+📅 {DateLabel}
+🕐 {TimeRange}
+⏱ {HoursLabel}
+
+За информацией обратитесь
+<b>{AdminUsername}</b>
+{AdminPhone}
+

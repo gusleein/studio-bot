@@ -1,0 +1,16 @@
+@props RentHoursProps
+
+@template
+⏱ <b>Сколько часов арендовать?</b>
+
+Дата: <b>{DateLabel}</b>
+
+@keyboard
+[row]
+{#each Hours as h}
+[btn callback="{h.Callback}"] {h.Label} [/btn]
+{/each}
+[/row]
+[row]
+[btn callback="rent:book"] ◀ К дате [/btn]
+[/row]

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 
@@ -83,6 +84,14 @@ func (s *Service) GetOrCreate(ctx context.Context, in service.ClientUpsert) (*do
 		if err != nil {
 			return nil, fmt.Errorf("создание клиента для существующего user: %w", err)
 		}
+	}
+	return client, nil
+}
+
+func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*domain.Client, error) {
+	client, err := s.clients.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("получение клиента: %w", err)
 	}
 	return client, nil
 }

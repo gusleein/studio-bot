@@ -71,6 +71,21 @@ type Config struct {
 	JWT     JWTConfig
 	Tribute TributeConfig
 	Storage StorageConfig
+	Rent    RentConfig
+	Admin   AdminConfig
+}
+
+// RentConfig — настройки клиентской аренды студии.
+type RentConfig struct {
+	AdminChatID  int64
+	CardNumber   string
+	PricePerHour int
+	Timezone     string
+}
+
+type AdminConfig struct {
+	Phone    string
+	Username string
 }
 
 func Load(filenames ...string) Config {
@@ -120,6 +135,16 @@ func Load(filenames ...string) Config {
 		},
 		Storage: StorageConfig{
 			BasePath: cast.ToString(getOrReturnDefault("STORAGE_BASE_PATH", "./storage")),
+		},
+		Rent: RentConfig{
+			AdminChatID:  int64(cast.ToInt(getOrReturnDefault("RENT_ADMIN_CHAT_ID", 576077782))),
+			CardNumber:   cast.ToString(getOrReturnDefault("RENT_CARD_NUMBER", "")),
+			PricePerHour: cast.ToInt(getOrReturnDefault("RENT_PRICE_PER_HOUR", 700)),
+			Timezone:     cast.ToString(getOrReturnDefault("RENT_TIMEZONE", "Europe/Moscow")),
+		},
+		Admin: AdminConfig{
+			Phone:    cast.ToString(getOrReturnDefault("ADMIN_PHONE", "")),
+			Username: cast.ToString(getOrReturnDefault("ADMIN_USERNAME", "")),
 		},
 	}
 }

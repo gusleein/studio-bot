@@ -37,6 +37,49 @@ func formatDate(t time.Time) string {
 	return fmt.Sprintf("%s, %d %s", ruWeekdays[t.Weekday()], t.Day(), ruMonths[t.Month()])
 }
 
+// formatClock возвращает время вида "14:00".
+func formatClock(t time.Time) string {
+	return t.Format("15:04")
+}
+
+// formatTimeRange возвращает интервал "14:00 – 16:00".
+func formatTimeRange(start, end time.Time) string {
+	return fmt.Sprintf("%s – %s", formatClock(start), formatClock(end))
+}
+
+// hoursLabel склоняет часы: 1 час, 2 часа, 5 часов.
+func hoursLabel(hours int) string {
+	n := hours % 100
+	if n >= 11 && n <= 14 {
+		return fmt.Sprintf("%d часов", hours)
+	}
+	switch n % 10 {
+	case 1:
+		return fmt.Sprintf("%d час", hours)
+	case 2, 3, 4:
+		return fmt.Sprintf("%d часа", hours)
+	default:
+		return fmt.Sprintf("%d часов", hours)
+	}
+}
+
+// formatAmount форматирует сумму в рублях.
+func formatAmount(amount int) string {
+	return fmt.Sprintf("%d ₽", amount)
+}
+
+// rentStatusLabel — статус брони для клиента.
+func rentStatusLabel(isPaid, isCancelled bool) string {
+	switch {
+	case isCancelled:
+		return "❌ Отменена"
+	case isPaid:
+		return "✅ Оплачена"
+	default:
+		return "⏳ Ожидает подтверждения"
+	}
+}
+
 // weekTitle возвращает HTML-заголовок недели с диапазоном дат.
 // Используется в ScheduleProps.WeekTitle для шаблона schedule.botview.
 func weekTitle(weekOffset int) string {

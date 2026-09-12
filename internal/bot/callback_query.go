@@ -8,8 +8,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func (h *Handler) handleCallbackQuery(_ context.Context, cq *tgbotapi.CallbackQuery) {
+func (h *Handler) handleCallbackQuery(ctx context.Context, cq *tgbotapi.CallbackQuery) {
 	h.answerCallback(cq.ID)
+
+	if cq.Message == nil {
+		h.log.Warn("callback без сообщения", zap.String("data", cq.Data))
+		return
+	}
 
 	parts := strings.SplitN(cq.Data, ":", 2)
 	if len(parts) != 2 {
@@ -17,5 +22,12 @@ func (h *Handler) handleCallbackQuery(_ context.Context, cq *tgbotapi.CallbackQu
 		return
 	}
 
-	h.log.Warn("неизвестная callback-команда", zap.String("cmd", parts[0]))
+	switch parts[0] {
+	case "rent":
+		h.handleRentCallback(ctx, cq, parts[1])
+	case "admin":
+		h.handleAdminCallback(ctx, cq, parts[1])
+	default:
+		h.log.Warn("неизвестная callback-команда", zap.String("cmd", parts[0]))
+	}
 }

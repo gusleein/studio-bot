@@ -16,6 +16,16 @@ func (h *Handler) handleMessage(ctx context.Context, msg *tgbotapi.Message) {
 		return
 	}
 
+	if len(msg.Photo) > 0 || msg.Document != nil {
+		h.handleReceipt(ctx, msg)
+		return
+	}
+
+	if sess := h.sessions.get(msg.From.ID); sess != nil && sess.AwaitingReceipt && !msg.IsCommand() {
+		h.send(msg.Chat.ID, "📎 Пришлите скриншот или файл с чеком оплаты.", nil)
+		return
+	}
+
 	if !msg.IsCommand() {
 		return
 	}
@@ -23,6 +33,8 @@ func (h *Handler) handleMessage(ctx context.Context, msg *tgbotapi.Message) {
 	switch msg.Command() {
 	case "start":
 		h.handleStart(ctx, msg)
+	case "rent":
+		h.handleRent(ctx, msg)
 	default:
 		h.send(msg.Chat.ID, "❓ Неизвестная команда. Попробуйте /start", nil)
 	}
@@ -86,17 +98,13 @@ func (h *Handler) handleContact(ctx context.Context, msg *tgbotapi.Message) {
 
 	h.sendWelcome(msg.Chat.ID, from.FirstName, tgbotapi.NewRemoveKeyboard(true))
 }
-
 func (h *Handler) requestPhone(chatID int64) {
 	h.send(chatID, "📱 Чтобы продолжить, поделитесь номером телефона — нажмите кнопку ниже.", phoneKeyboard())
 }
 
 func (h *Handler) sendWelcome(chatID int64, firstName string, markup interface{}) {
-	result, err := h.renderer.Render("welcome", WelcomeProps{FirstName: firstName})
-	if err != nil {
-		h.log.Error("ошибка рендеринга welcome", zap.Error(err))
-		h.send(chatID, "⚠️ Произошла ошибка. Попробуйте позже.", markup)
-		return
+	if markup != nil {
+		h.send(chatID, "✅ Номер сохранён.", markup)
 	}
-	h.send(chatID, result.Text, markup)
+	h.renderAndSend(chatID, "welcome", WelcomeProps{FirstName: firstName})
 }

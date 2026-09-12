@@ -1,0 +1,17 @@
+@props RentMenuProps
+
+@template
+🎛 <b>Аренда студии</b>
+
+Выберите действие:
+
+@keyboard
+[row]
+[btn callback="rent:book"] 🆕 Забронировать [/btn]
+[/row]
+[row]
+[btn callback="rent:next"] 📅 Ближайшая аренда [/btn]
+[/row]
+[row]
+[btn callback="rent:history"] 📜 История [/btn]
+[/row]

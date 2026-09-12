@@ -1,0 +1,24 @@
+@props RentUpcomingProps
+
+@template
+📅 <b>Ближайшая аренда</b>
+
+{#if HasRent}
+📅 {Item.DateLabel}
+🕐 {Item.TimeRange}
+⏱ {Item.HoursLabel}
+💰 {Item.Amount}
+📌 {Item.Status}
+{/if}
+{#if !HasRent}
+Пока нет предстоящих броней.
+Забронируйте студию через меню.
+{/if}
+
+@keyboard
+[row]
+[btn callback="rent:book"] 🆕 Забронировать [/btn]
+[/row]
+[row]
+[btn callback="rent:menu"] ◀ В меню [/btn]
+[/row]

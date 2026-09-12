@@ -1,0 +1,19 @@
+@props RentHistoryProps
+
+@template
+📜 <b>История аренды</b>
+
+{#if IsEmpty}
+Записей пока нет.
+{/if}
+{#each Items as item}
+📅 {item.DateLabel} · {item.TimeRange}
+  {item.HoursLabel} · {item.Amount}
+  {item.Status}
+
+{/each}
+
+@keyboard
+[row]
+[btn callback="rent:menu"] ◀ В меню [/btn]
+[/row]

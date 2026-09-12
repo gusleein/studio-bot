@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/yourstudio/studio-bot/internal/service"
 	client2 "github.com/yourstudio/studio-bot/internal/service/client"
+	rent2 "github.com/yourstudio/studio-bot/internal/service/rent"
 	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -42,6 +43,8 @@ type serviceProvider struct {
 
 	clientsSrvOnce sync.Once
 	clientsService service.ClientService
+
+	rentService service.RentService
 }
 
 func newServiceProvider(cfg *config.Config, db *sqlx.DB, log *logger.Logger) *serviceProvider {
@@ -88,4 +91,11 @@ func (sp *serviceProvider) ClientsService() service.ClientService {
 		sp.clientsService = client2.New(sp.db, sp.TelegramUserRepo(), sp.ClientRepo(), sp.log)
 	}
 	return sp.clientsService
+}
+
+func (sp *serviceProvider) RentService() service.RentService {
+	if sp.rentService == nil {
+		sp.rentService = rent2.New(sp.RentRepo(), sp.log)
+	}
+	return sp.rentService
 }

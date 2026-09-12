@@ -106,7 +106,16 @@ func (a *App) initBot(_ context.Context) error {
 		a.cfg.Bot.Debug,
 		a.cfg.Bot.Timeout,
 		a.serviceProvider.ClientsService(),
-		a.log)
+		a.serviceProvider.RentService(),
+		a.log,
+		bot.Settings{
+			AdminChatID:   a.cfg.Rent.AdminChatID,
+			CardNumber:    a.cfg.Rent.CardNumber,
+			PricePerHour:  a.cfg.Rent.PricePerHour,
+			AdminPhone:    a.cfg.Admin.Phone,
+			AdminUsername: a.cfg.Admin.Username,
+			Location:      a.cfg.Rent.Timezone,
+		})
 	return err
 }
 

@@ -1,0 +1,10 @@
+@props RentReceiptSentProps
+
+@template
+📨 Чек получен.
+
+Дата: <b>{DateLabel}</b>
+Время: <b>{TimeRange}</b>
+Сумма: <b>{Amount}</b>
+
+Ожидайте подтверждения администратора.
