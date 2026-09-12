@@ -1,28 +1,45 @@
 package converter
 
 import (
+	"database/sql"
+
 	"github.com/yourstudio/studio-bot/internal/domain"
 	"github.com/yourstudio/studio-bot/internal/repository/payment/model"
 )
 
-// ToDomain преобразует модель БД в доменный объект Payment.
 func ToDomain(m *model.PaymentModel) *domain.Payment {
-	return &domain.Payment{
+	p := &domain.Payment{
 		ID:               m.ID,
-		TributeUserID:    m.TributeUserID,
-		TributeProductID: m.TributeProductID,
+		ClientID:         m.ClientID,
 		Amount:           m.Amount,
+		Currency:         domain.Currency(m.Currency),
+		Status:           domain.PaymentStatus(m.Status),
+		TributeOrderUUID: m.TributeOrderUUID,
+		PaymentURL:       m.PaymentURL,
 		CreatedAt:        m.CreatedAt,
+		UpdatedAt:        m.UpdatedAt,
 	}
+	if m.PaidAt.Valid {
+		t := m.PaidAt.Time
+		p.PaidAt = &t
+	}
+	return p
 }
 
-// ToModel преобразует доменный объект Payment в модель БД.
 func ToModel(p *domain.Payment) *model.PaymentModel {
-	return &model.PaymentModel{
+	m := &model.PaymentModel{
 		ID:               p.ID,
-		TributeUserID:    p.TributeUserID,
-		TributeProductID: p.TributeProductID,
+		ClientID:         p.ClientID,
 		Amount:           p.Amount,
+		Currency:         string(p.Currency),
+		Status:           string(p.Status),
+		TributeOrderUUID: p.TributeOrderUUID,
+		PaymentURL:       p.PaymentURL,
 		CreatedAt:        p.CreatedAt,
+		UpdatedAt:        p.UpdatedAt,
 	}
+	if p.PaidAt != nil {
+		m.PaidAt = sql.NullTime{Time: *p.PaidAt, Valid: true}
+	}
+	return m
 }

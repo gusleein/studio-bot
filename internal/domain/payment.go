@@ -1,19 +1,40 @@
 package domain
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-// Payment — запись об успешном платеже через Tribute.
-// Для каждого вида товаров будет
+type Currency string
+
+const (
+	CurrencyRUB Currency = "rub"
+	CurrencyUSD Currency = "usd"
+	CurrencyEUR Currency = "eur"
+)
+
+type PaymentStatus string
+
+const (
+	PaymentStatusPending  PaymentStatus = "pending"
+	PaymentStatusPaid     PaymentStatus = "paid"
+	PaymentStatusFailed   PaymentStatus = "failed"
+	PaymentStatusRefunded PaymentStatus = "refunded"
+)
+
+// Payment — попытка оплаты у нас. Сумма всегда в копейках/центах.
 type Payment struct {
-	ID uuid.UUID
+	ID       uuid.UUID
+	ClientID uuid.UUID
+	Amount   int // 100 ₽ = 10000
+	Currency Currency
+	Status   PaymentStatus
 
-	TributeUserID    int64
-	TributeProductID int
+	TributeOrderUUID string // uuid заказа Shop API
+	PaymentURL       string // webappPaymentUrl, отдали клиенту в боте
 
-	Amount int
-
+	PaidAt    *time.Time
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }

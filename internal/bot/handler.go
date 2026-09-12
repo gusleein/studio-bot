@@ -14,36 +14,25 @@ import (
 // Handler — основной обработчик обновлений Telegram-бота.
 type Handler struct {
 	bot      *tgbotapi.BotAPI
-	student  service.StudentService
-	schedule service.ScheduleService
-	sub      service.SubscriptionService
+	clients  service.ClientService
 	log      *logger.Logger
 	renderer *botview.Renderer
-	subLinks []SubLinkProps // Tribute-ссылки для оформления подписок
 }
 
-// NewHandler создаёт новый обработчик бота.
 func NewHandler(
 	bot *tgbotapi.BotAPI,
-	student service.StudentService,
-	schedule service.ScheduleService,
-	sub service.SubscriptionService,
+	clients service.ClientService,
 	log *logger.Logger,
 	renderer *botview.Renderer,
-	subLinks []SubLinkProps,
 ) *Handler {
 	return &Handler{
 		bot:      bot,
-		student:  student,
-		schedule: schedule,
-		sub:      sub,
+		clients:  clients,
 		log:      log,
 		renderer: renderer,
-		subLinks: subLinks,
 	}
 }
 
-// HandleUpdate диспетчеризирует входящее обновление Telegram.
 func (h *Handler) HandleUpdate(update tgbotapi.Update) {
 	ctx := context.Background()
 	switch {
@@ -54,7 +43,6 @@ func (h *Handler) HandleUpdate(update tgbotapi.Update) {
 	}
 }
 
-// renderAndSend рендерит шаблон и отправляет сообщение в чат.
 func (h *Handler) renderAndSend(chatID int64, tmpl string, props any) {
 	result, err := h.renderer.Render(tmpl, props)
 	if err != nil {
@@ -68,7 +56,6 @@ func (h *Handler) renderAndSend(chatID int64, tmpl string, props any) {
 	h.send(chatID, result.Text, result.Keyboard)
 }
 
-// renderAndEdit рендерит шаблон и редактирует существующее сообщение.
 func (h *Handler) renderAndEdit(chatID int64, messageID int, tmpl string, props any) {
 	result, err := h.renderer.Render(tmpl, props)
 	if err != nil {
@@ -81,7 +68,6 @@ func (h *Handler) renderAndEdit(chatID int64, messageID int, tmpl string, props 
 	h.editMessage(chatID, messageID, result.Text, result.Keyboard)
 }
 
-// send отправляет текстовое HTML-сообщение с опциональной инлайн-клавиатурой.
 func (h *Handler) send(chatID int64, text string, markup interface{}) {
 	msg := tgbotapi.NewMessage(chatID, text)
 	msg.ParseMode = "HTML"
@@ -98,7 +84,6 @@ func (h *Handler) send(chatID int64, text string, markup interface{}) {
 	}
 }
 
-// editMessage редактирует существующее сообщение (текст + разметка).
 func (h *Handler) editMessage(chatID int64, messageID int, text string, markup interface{}) {
 	edit := tgbotapi.NewEditMessageText(chatID, messageID, text)
 	edit.ParseMode = "HTML"
@@ -118,7 +103,6 @@ func (h *Handler) editMessage(chatID int64, messageID int, text string, markup i
 	}
 }
 
-// answerCallback отвечает на callback query, убирая индикатор загрузки.
 func (h *Handler) answerCallback(callbackID string) {
 	answer := tgbotapi.NewCallback(callbackID, "")
 	if _, err := h.bot.Request(answer); err != nil {

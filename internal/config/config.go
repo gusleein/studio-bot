@@ -53,13 +53,10 @@ type JWTConfig struct {
 }
 
 type TributeConfig struct {
-	APIKey               string
-	BaseURL              string
-	ShopID               uint64
-	WebhookURL           string
-	ProductIDSamplePacks int
-	ProductIDPresets     int
-	ProductIDBundle      int
+	APIKey     string
+	BaseURL    string
+	ShopID     uint64
+	WebhookURL string
 }
 
 type StorageConfig struct {
@@ -116,13 +113,10 @@ func Load(filenames ...string) Config {
 			Expiration: cast.ToDuration(getOrReturnDefault("JWT_EXPIRATION", "720h")),
 		},
 		Tribute: TributeConfig{
-			APIKey:               tributeAPIKey(),
-			BaseURL:              cast.ToString(getOrReturnDefault("TRIBUTE_BASE_URL", "https://tribute.tg/api/v1")),
-			ShopID:               uint64(cast.ToInt(getOrReturnDefault("TRIBUTE_SHOP_ID", 0))),
-			WebhookURL:           cast.ToString(getOrReturnDefault("TRIBUTE_WEBHOOK_URL", "")),
-			ProductIDSamplePacks: cast.ToInt(getOrReturnDefault("TRIBUTE_PRODUCT_ID_SAMPLE_PACKS", 0)),
-			ProductIDPresets:     cast.ToInt(getOrReturnDefault("TRIBUTE_PRODUCT_ID_PRESETS", 0)),
-			ProductIDBundle:      cast.ToInt(getOrReturnDefault("TRIBUTE_PRODUCT_ID_BUNDLE", 0)),
+			APIKey:     tributeAPIKey(),
+			BaseURL:    cast.ToString(getOrReturnDefault("TRIBUTE_BASE_URL", "https://tribute.tg/api/v1")),
+			ShopID:     uint64(cast.ToInt(getOrReturnDefault("TRIBUTE_SHOP_ID", 0))),
+			WebhookURL: cast.ToString(getOrReturnDefault("TRIBUTE_WEBHOOK_URL", "")),
 		},
 		Storage: StorageConfig{
 			BasePath: cast.ToString(getOrReturnDefault("STORAGE_BASE_PATH", "./storage")),

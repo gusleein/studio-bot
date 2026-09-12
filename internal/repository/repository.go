@@ -2,53 +2,49 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/yourstudio/studio-bot/internal/domain"
 )
 
-// StudentRepository — интерфейс репозитория студентов.
-type StudentRepository interface {
-	GetByID(ctx context.Context, id uuid.UUID) (*domain.Student, error)
-	GetByTelegramID(ctx context.Context, telegramID int64) (*domain.Student, error)
-	Create(ctx context.Context, student *domain.Student) (*domain.Student, error)
-	Update(ctx context.Context, student *domain.Student) (*domain.Student, error)
+// TelegramUserRepository — хранилище профилей Telegram.
+type TelegramUserRepository interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.TelegramUser, error)
+	GetByTelegramID(ctx context.Context, telegramID int64) (*domain.TelegramUser, error)
+	Create(ctx context.Context, user *domain.TelegramUser) (*domain.TelegramUser, error)
+	Update(ctx context.Context, user *domain.TelegramUser) (*domain.TelegramUser, error)
 }
 
-// ScheduleRepository — интерфейс репозитория расписания.
-type ScheduleRepository interface {
-	List(ctx context.Context, from, to time.Time) ([]*domain.Schedule, error)
-	ListByStudentID(ctx context.Context, studentID uuid.UUID, from, to time.Time) ([]*domain.Schedule, error)
+// ClientRepository — хранилище клиентов аренды.
+// Rents и Payments в агрегате не заполняются: их грузит сервис через RentRepository / PaymentRepository.
+type ClientRepository interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Client, error)
+	GetByTelegramID(ctx context.Context, telegramID int64) (*domain.Client, error)
+	Create(ctx context.Context, client *domain.Client) (*domain.Client, error)
+	Update(ctx context.Context, client *domain.Client) (*domain.Client, error)
 }
 
-// SubscriptionRepository — интерфейс репозитория подписок.
-type SubscriptionRepository interface {
-	GetActiveByStudentID(ctx context.Context, studentID uuid.UUID) ([]*domain.Subscription, error)
-	GetActiveSubscribersTelegramIDs(ctx context.Context, t domain.SubscriptionType) ([]int64, error)
-	Upsert(ctx context.Context, sub *domain.Subscription) (*domain.Subscription, error)
-	ExpireOld(ctx context.Context) error
+// RentRepository — хранилище сессий аренды.
+type RentRepository interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Rent, error)
+	ListByClientID(ctx context.Context, clientID uuid.UUID) ([]*domain.Rent, error)
+	Create(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
+	Update(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
 }
 
-// PackRepository — интерфейс репозитория паков.
-type PackRepository interface {
-	List(ctx context.Context, packType *domain.PackType) ([]*domain.Pack, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*domain.Pack, error)
-	Create(ctx context.Context, pack *domain.Pack) (*domain.Pack, error)
-	UpdateTelegramFileID(ctx context.Context, id uuid.UUID, fileID string) error
-	ListUnnotified(ctx context.Context) ([]*domain.Pack, error)
-	MarkNotified(ctx context.Context, id uuid.UUID) error
+// ProductRepository — каталог доп. товаров.
+type ProductRepository interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Product, error)
+	List(ctx context.Context) ([]*domain.Product, error)
+	Create(ctx context.Context, product *domain.Product) (*domain.Product, error)
 }
 
-// PaymentRepository — интерфейс репозитория платежей.
+// PaymentRepository — попытки оплаты клиента.
 type PaymentRepository interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Payment, error)
+	GetByTributeOrderUUID(ctx context.Context, orderUUID string) (*domain.Payment, error)
+	ListByClientID(ctx context.Context, clientID uuid.UUID) ([]*domain.Payment, error)
 	Create(ctx context.Context, payment *domain.Payment) (*domain.Payment, error)
-	ExistsByTributeData(ctx context.Context, tributeUserID int64, tributeProductID int, amount int) (bool, error)
-}
-
-type TeacherRepository interface {
-	Create(ctx context.Context, t *domain.Teacher) (*domain.Teacher, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*domain.Teacher, error)
-	GetAll(ctx context.Context) ([]*domain.Teacher, error)
+	Update(ctx context.Context, payment *domain.Payment) (*domain.Payment, error)
 }

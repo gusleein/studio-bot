@@ -2,6 +2,7 @@ package payment
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,64 +10,137 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yourstudio/studio-bot/internal/domain"
+	"github.com/yourstudio/studio-bot/internal/repository"
 	"github.com/yourstudio/studio-bot/internal/repository/payment/converter"
+	"github.com/yourstudio/studio-bot/internal/repository/payment/model"
 	"github.com/yourstudio/studio-bot/pkg/database"
 )
 
-const (
-	// createPaymentQuery — вставка нового платежа.
-	createPaymentQuery = `
-		INSERT INTO payments
-			(id, student_id, subscription_id, tribute_user_id, tribute_product_id,
-			 amount, currency, subscription_type, created_at)
-		VALUES
-			(:id, :student_id, :subscription_id, :tribute_user_id, :tribute_product_id,
-			 :amount, :currency, :subscription_type, :created_at)`
+const paymentColumns = `
+		id, client_id, amount, currency, status,
+		tribute_order_uuid, payment_url, paid_at, created_at, updated_at`
 
-	// existsByTributeDataQuery — проверка идемпотентности: был ли уже платёж с такими данными Tribute.
-	existsByTributeDataQuery = `
-		SELECT COUNT(1)
+const (
+	createQuery = `
+		INSERT INTO payments
+			(id, client_id, amount, currency, status,
+			 tribute_order_uuid, payment_url, paid_at, created_at, updated_at)
+		VALUES
+			(:id, :client_id, :amount, :currency, :status,
+			 :tribute_order_uuid, :payment_url, :paid_at, :created_at, :updated_at)`
+
+	getByIDQuery = `
+		SELECT` + paymentColumns + `
 		FROM payments
-		WHERE tribute_user_id = $1
-		  AND tribute_product_id = $2
-		  AND amount = $3`
+		WHERE id = $1`
+
+	getByTributeOrderUUIDQuery = `
+		SELECT` + paymentColumns + `
+		FROM payments
+		WHERE tribute_order_uuid = $1`
+
+	listByClientIDQuery = `
+		SELECT` + paymentColumns + `
+		FROM payments
+		WHERE client_id = $1
+		ORDER BY created_at DESC`
+
+	updateQuery = `
+		UPDATE payments
+		SET
+			amount             = :amount,
+			currency           = :currency,
+			status             = :status,
+			tribute_order_uuid = :tribute_order_uuid,
+			payment_url        = :payment_url,
+			paid_at            = :paid_at,
+			updated_at         = :updated_at
+		WHERE id = :id`
 )
 
-// PaymentRepo — репозиторий для работы с платежами.
 type PaymentRepo struct {
 	db *sqlx.DB
 }
 
-// New создаёт новый экземпляр PaymentRepo.
+var _ repository.PaymentRepository = (*PaymentRepo)(nil)
+
 func New(db *sqlx.DB) *PaymentRepo {
 	return &PaymentRepo{db: db}
 }
 
-// Create создаёт новую запись о платеже в БД.
 func (r *PaymentRepo) Create(ctx context.Context, p *domain.Payment) (*domain.Payment, error) {
 	db := database.GetDB(ctx, r.db)
 
-	p.ID = uuid.New()
-	p.CreatedAt = time.Now()
+	if p.ID == uuid.Nil {
+		p.ID = uuid.New()
+	}
+	if p.Currency == "" {
+		p.Currency = domain.CurrencyRUB
+	}
+	if p.Status == "" {
+		p.Status = domain.PaymentStatusPending
+	}
+	now := time.Now()
+	p.CreatedAt = now
+	p.UpdatedAt = now
 
-	m := converter.ToModel(p)
-
-	if _, err := db.NamedExecContext(ctx, createPaymentQuery, m); err != nil {
+	if _, err := db.NamedExecContext(ctx, createQuery, converter.ToModel(p)); err != nil {
 		return nil, errors.Wrap(err, "create payment")
 	}
-
 	return p, nil
 }
 
-// ExistsByTributeData проверяет, был ли уже обработан платёж с заданными данными Tribute.
-// Используется для защиты от дублирующихся webhook-событий.
-func (r *PaymentRepo) ExistsByTributeData(ctx context.Context, tributeUserID int64, productID int, amount int) (bool, error) {
+func (r *PaymentRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Payment, error) {
+	return r.get(ctx, getByIDQuery, id, "get payment by id")
+}
+
+func (r *PaymentRepo) GetByTributeOrderUUID(ctx context.Context, orderUUID string) (*domain.Payment, error) {
+	return r.get(ctx, getByTributeOrderUUIDQuery, orderUUID, "get payment by tribute order uuid")
+}
+
+func (r *PaymentRepo) ListByClientID(ctx context.Context, clientID uuid.UUID) ([]*domain.Payment, error) {
 	db := database.GetDB(ctx, r.db)
 
-	var count int
-	if err := db.GetContext(ctx, &count, existsByTributeDataQuery, tributeUserID, productID, amount); err != nil {
-		return false, errors.Wrap(err, "check payment exists by tribute data")
+	var rows []model.PaymentModel
+	if err := db.SelectContext(ctx, &rows, listByClientIDQuery, clientID); err != nil {
+		return nil, errors.Wrap(err, "list payments by client_id")
 	}
 
-	return count > 0, nil
+	result := make([]*domain.Payment, len(rows))
+	for i := range rows {
+		result[i] = converter.ToDomain(&rows[i])
+	}
+	return result, nil
+}
+
+func (r *PaymentRepo) Update(ctx context.Context, p *domain.Payment) (*domain.Payment, error) {
+	db := database.GetDB(ctx, r.db)
+
+	p.UpdatedAt = time.Now()
+	res, err := db.NamedExecContext(ctx, updateQuery, converter.ToModel(p))
+	if err != nil {
+		return nil, errors.Wrap(err, "update payment")
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return nil, errors.Wrap(err, "update payment rows affected")
+	}
+	if affected == 0 {
+		return nil, domain.ErrNotFound
+	}
+	return p, nil
+}
+
+func (r *PaymentRepo) get(ctx context.Context, query string, arg any, wrap string) (*domain.Payment, error) {
+	db := database.GetDB(ctx, r.db)
+
+	var m model.PaymentModel
+	if err := db.GetContext(ctx, &m, query, arg); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, errors.Wrap(err, wrap)
+	}
+	return converter.ToDomain(&m), nil
 }
