@@ -1,0 +1,24 @@
+@props SubscriptionProps
+
+@template
+{#if HasSubs}
+🎫 <b>Ваши активные подписки:</b>
+
+{#each Subs as sub}
+{sub.TypeName}
+  ✅ Активна до: <b>{sub.ExpiresAt}</b>
+
+{/each}
+{/if}
+{#if !HasSubs}
+📭 У вас нет активных подписок.
+
+Оформить подписку можно по кнопке ниже.
+{/if}
+
+@keyboard
+{#each Links as link}
+[row]
+[url href="{link.URL}"] {link.Label} [/url]
+[/row]
+{/each}
