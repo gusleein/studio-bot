@@ -1,7 +1,7 @@
 @props RentHoursProps
 
 @template
-⏱ <b>Сколько часов арендовать?</b>
+⏱ <b>Сколько часов продлится практика?</b>
 
 Дата: <b>{DateLabel}</b>
 

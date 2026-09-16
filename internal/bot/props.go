@@ -62,15 +62,21 @@ type RentReceiptSentProps struct {
 
 // RentAdminConfirmProps — карточка для администратора.
 type RentAdminConfirmProps struct {
-	ClientName      string
-	Username        string
-	Phone           string
-	DateLabel       string
-	TimeRange       string
-	HoursLabel      string
-	Amount          string
-	ConfirmCallback string
-	CancelCallback  string
+	ClientName             string
+	Username               string
+	Phone                  string
+	DateLabel              string
+	TimeRange              string
+	HoursLabel             string
+	Amount                 string
+	ConfirmCallback        string
+	CancelCallback         string
+	CancelWithPaidCallback string
+}
+
+type RentAdminCancelProps struct {
+	RentAdminConfirmProps
+	IsPaid bool
 }
 
 // RentConfirmedProps — подтверждение клиенту.
@@ -78,6 +84,14 @@ type RentConfirmedProps struct {
 	DateLabel  string
 	TimeRange  string
 	HoursLabel string
+}
+
+// RentCanceledProps — подтверждение клиенту.
+type RentCanceledProps struct {
+	DateLabel  string
+	TimeRange  string
+	HoursLabel string
+	IsPaid     bool
 }
 
 // RentItemProps — строка аренды в списках.

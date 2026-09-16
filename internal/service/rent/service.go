@@ -93,6 +93,31 @@ func (s *Service) ConfirmPaid(ctx context.Context, id uuid.UUID) (*domain.Rent, 
 	return updated, nil
 }
 
+func (s *Service) CancelPaid(ctx context.Context, isPaid bool, id uuid.UUID) (*domain.Rent, error) {
+	rent, err := s.rents.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("аренда для отмены: %w", err)
+	}
+	if rent.IsCancelled {
+		return nil, domain.ErrNotFound
+	}
+	if rent.IsPaid {
+		return rent, nil
+	}
+
+	// отменяем аренду
+	rent.IsCancelled = true
+	rent.IsPaid = isPaid
+	if isPaid {
+		rent.PaidAt = time.Now()
+	}
+	updated, err := s.rents.Update(ctx, rent)
+	if err != nil {
+		return nil, fmt.Errorf("подтверждение оплаты: %w", err)
+	}
+	return updated, nil
+}
+
 func (s *Service) CancelUnpaid(ctx context.Context, id uuid.UUID) error {
 	if id == uuid.Nil {
 		return nil

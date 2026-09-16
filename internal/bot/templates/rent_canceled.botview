@@ -1,7 +1,8 @@
 @props RentConfirmedProps
 
 @template
-❌ <b>Аренда не подтверждена</b>
+❌ <b>Бронь слота не подтверждена</b>
+{#if IsPaid}По возврату средств с вами свяжется администратор студии{/if}
 
 📅 {DateLabel}
 🕐 {TimeRange}

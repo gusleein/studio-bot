@@ -32,5 +32,6 @@ type RentService interface {
 	Occupied(ctx context.Context, from, to time.Time) ([]*domain.Rent, error)
 	CreateUnpaid(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
 	ConfirmPaid(ctx context.Context, id uuid.UUID) (*domain.Rent, error)
+	CancelPaid(ctx context.Context, isPaid bool, id uuid.UUID) (*domain.Rent, error)
 	CancelUnpaid(ctx context.Context, id uuid.UUID) error
 }

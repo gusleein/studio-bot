@@ -1,7 +1,7 @@
 @props RentConfirmedProps
 
 @template
-✅ <b>Аренда подтверждена</b>
+✅ <b>Бронь слота подтверждена</b>
 
 📅 {DateLabel}
 🕐 {TimeRange}

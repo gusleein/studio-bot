@@ -1,7 +1,7 @@
 @props RentAdminConfirmProps
 
 @template
-🧾 <b>Чек на аренду</b>
+🧾 <b>Чек на бронь слота</b>
 
 Клиент: <b>{ClientName}</b>
 {#if Username} @{Username}{/if}
@@ -13,7 +13,7 @@
 ⏱ {HoursLabel}
 💰 {Amount}
 
-Подтвердите оплату, чтобы закрепить бронь.
+Подтвердите оплату, чтобы закрепить бронь слота
 
 @keyboard
 [row]
@@ -21,4 +21,7 @@
 [/row]
 [row]
 [btn callback="{CancelCallback}"] ❌ Отменить [/btn]
+[/row]
+[row]
+[btn callback="{CancelWithPaidCallback}"] ❌ Оплата подтверждена, выполнить отмену [/btn]
 [/row]

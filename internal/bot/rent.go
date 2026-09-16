@@ -97,35 +97,34 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_done", toAdminDoneProps(rent, client, h.loc))
 	}
 
-	//if strings.HasPrefix(payload, "cancel:") {
-	//	id, err := uuid.Parse(strings.TrimPrefix(payload, "cancel:"))
-	//	if err != nil {
-	//		h.log.Warn("неверный id аренды в callback", zap.Error(err))
-	//		return
-	//	}
-	//
-	//	err := h.rents.CancelUnpaid(ctx, id)
-	//	if err != nil {
-	//		h.log.Error("ошибка подтверждения аренды", zap.Error(err))
-	//		h.send(cq.Message.Chat.ID, "⚠️ Не удалось подтвердить аренду.", nil)
-	//		return
-	//	}
-	//
-	//	rent, err := h.rents.GetByID(ctx, id)
-	//	if err != nil {
-	//		h.log.Error("")
-	//	}
-	//
-	//	client, err := h.clients.GetByID(ctx, rent.ClientID)
-	//	if err != nil {
-	//		h.log.Error("клиент для подтверждённой аренды не найден", zap.Error(err))
-	//		client = &domain.Client{}
-	//	} else {
-	//		h.renderAndSend(client.TgUser.TelegramId, "rent_confirmed", toConfirmedProps(rent, h.loc))
-	//	}
-	//
-	//	h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_done", toAdminDoneProps(rent, client, h.loc))
-	//}
+	if strings.HasPrefix(payload, "cancel:") {
+		isPaid := false
+		if strings.HasPrefix(payload, "cancel:with_paid:") {
+			isPaid = true
+		}
+		id, err := uuid.Parse(strings.TrimPrefix(payload, "cancel:"))
+		if err != nil {
+			h.log.Warn("неверный id аренды в callback", zap.Error(err))
+			return
+		}
+
+		rent, err := h.rents.CancelPaid(ctx, isPaid, id)
+		if err != nil {
+			h.log.Error("ошибка подтверждения аренды", zap.Error(err))
+			h.send(cq.Message.Chat.ID, "⚠️ Не удалось подтвердить аренду.", nil)
+			return
+		}
+
+		client, err := h.clients.GetByID(ctx, rent.ClientID)
+		if err != nil {
+			h.log.Error("клиент для отмены аренды не найден", zap.Error(err))
+			client = &domain.Client{}
+		} else {
+			h.renderAndSend(client.TgUser.TelegramId, "rent_canceled", toCanceledProps(rent, h.loc))
+		}
+
+		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_cancel", toAdminCanceledProps(rent, client, h.loc))
+	}
 
 }
 
@@ -457,21 +456,63 @@ func toConfirmedProps(r *domain.Rent, loc *time.Location) RentConfirmedProps {
 	}
 }
 
+func toCanceledProps(r *domain.Rent, loc *time.Location) RentCanceledProps {
+	start := r.StartsAt.In(loc)
+	end := r.EndsAt.In(loc)
+	return RentCanceledProps{
+		DateLabel:  formatDate(start),
+		TimeRange:  formatTimeRange(start, end),
+		HoursLabel: hoursLabel(r.PaidDuration),
+		IsPaid:     r.IsPaid,
+	}
+}
+
 func toAdminConfirmProps(r *domain.Rent, client *domain.Client, loc *time.Location) RentAdminConfirmProps {
 	start := r.StartsAt.In(loc)
 	end := r.EndsAt.In(loc)
 	name := strings.TrimSpace(client.TgUser.FirstName + " " + client.TgUser.LastName)
 	return RentAdminConfirmProps{
-		ClientName:      name,
-		Username:        client.TgUser.Username,
-		Phone:           client.TgUser.Phone,
-		DateLabel:       formatDate(start),
-		TimeRange:       formatTimeRange(start, end),
-		HoursLabel:      hoursLabel(r.PaidDuration),
-		Amount:          formatAmount(r.PricePerHour * r.PaidDuration),
-		ConfirmCallback: "admin:confirm:" + r.ID.String(),
-		CancelCallback:  "admin:cancel:" + r.ID.String(),
+		ClientName:             name,
+		Username:               client.TgUser.Username,
+		Phone:                  client.TgUser.Phone,
+		DateLabel:              formatDate(start),
+		TimeRange:              formatTimeRange(start, end),
+		HoursLabel:             hoursLabel(r.PaidDuration),
+		Amount:                 formatAmount(r.PricePerHour * r.PaidDuration),
+		ConfirmCallback:        "admin:confirm:" + r.ID.String(),
+		CancelCallback:         "admin:cancel:" + r.ID.String(),
+		CancelWithPaidCallback: "admin:cancel:with_paid:" + r.ID.String(),
 	}
+}
+
+func toAdminCancelProps(r *domain.Rent, client *domain.Client, loc *time.Location) RentAdminCancelProps {
+	start := r.StartsAt.In(loc)
+	end := r.EndsAt.In(loc)
+	name := strings.TrimSpace(client.TgUser.FirstName + " " + client.TgUser.LastName)
+	confirmProps := RentAdminConfirmProps{
+		ClientName:             name,
+		Username:               client.TgUser.Username,
+		Phone:                  client.TgUser.Phone,
+		DateLabel:              formatDate(start),
+		TimeRange:              formatTimeRange(start, end),
+		HoursLabel:             hoursLabel(r.PaidDuration),
+		Amount:                 formatAmount(r.PricePerHour * r.PaidDuration),
+		ConfirmCallback:        "admin:confirm:" + r.ID.String(),
+		CancelCallback:         "admin:cancel:" + r.ID.String(),
+		CancelWithPaidCallback: "admin:cancel:with_paid:" + r.ID.String(),
+	}
+	return RentAdminCancelProps{
+		RentAdminConfirmProps: confirmProps,
+		IsPaid:                r.IsPaid,
+	}
+}
+
+func toAdminCanceledProps(r *domain.Rent, client *domain.Client, loc *time.Location) RentAdminCancelProps {
+	props := toAdminCancelProps(r, client, loc)
+	if client == nil {
+		props.ClientName = "клиент"
+	}
+	return props
 }
 
 func toAdminDoneProps(r *domain.Rent, client *domain.Client, loc *time.Location) RentAdminConfirmProps {
