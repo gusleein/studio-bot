@@ -61,6 +61,8 @@ func (a *App) initConfig(_ context.Context) error {
 	a.log.Info("loading config")
 	cfg := config.Load()
 	a.cfg = &cfg
+
+	a.log.Debug("loaded config", zap.Any("config", a.cfg))
 	return nil
 }
 
