@@ -8,3 +8,7 @@
 ⏱ {HoursLabel}
 
 Ждём вас в студии.
+
+За информацией обратитесь
+<b>{AdminUsername}</b>
+{AdminPhone}
