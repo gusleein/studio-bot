@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"github.com/yourstudio/studio-bot/internal/repository/appsettings/model"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,21 +10,27 @@ import (
 	"github.com/yourstudio/studio-bot/internal/domain"
 )
 
+// AppSettingsRepository - хрнаилище настроек приложения
+type AppSettingsRepository interface {
+	GetAllAppSettings(ctx context.Context) ([]model.AppSettings, error)
+	UpdateAppSettings(ctx context.Context, appSettings model.AppSettings) error
+}
+
 // TelegramUserRepository — хранилище профилей Telegram.
 type TelegramUserRepository interface {
-	GetByID(ctx context.Context, id uuid.UUID) (*domain.TelegramUser, error)
-	GetByTelegramID(ctx context.Context, telegramID int64) (*domain.TelegramUser, error)
-	Create(ctx context.Context, user *domain.TelegramUser) (*domain.TelegramUser, error)
-	Update(ctx context.Context, user *domain.TelegramUser) (*domain.TelegramUser, error)
+	GetByID(ctx context.Context, id uuid.UUID) (domain.TelegramUser, error)
+	GetByTelegramID(ctx context.Context, telegramID int64) (domain.TelegramUser, error)
+	Create(ctx context.Context, user domain.TelegramUser) (domain.TelegramUser, error)
+	Update(ctx context.Context, user domain.TelegramUser) (domain.TelegramUser, error)
 }
 
 // ClientRepository — хранилище клиентов аренды.
 // Rents и Payments в агрегате не заполняются: их грузит сервис через RentRepository / PaymentRepository.
 type ClientRepository interface {
-	GetByID(ctx context.Context, id uuid.UUID) (*domain.Client, error)
-	GetByTelegramID(ctx context.Context, telegramID int64) (*domain.Client, error)
-	Create(ctx context.Context, client *domain.Client) (*domain.Client, error)
-	Update(ctx context.Context, client *domain.Client) (*domain.Client, error)
+	GetByID(ctx context.Context, id uuid.UUID) (domain.Client, error)
+	GetByTelegramID(ctx context.Context, telegramID int64) (domain.Client, error)
+	Create(ctx context.Context, client domain.Client) (domain.Client, error)
+	Update(ctx context.Context, client domain.Client) (domain.Client, error)
 }
 
 // RentRepository — хранилище сессий аренды.

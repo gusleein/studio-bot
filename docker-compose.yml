@@ -1,33 +1,42 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: studio_postgres
+  studio-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: studio-bot
     restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - studio-bot-network
     environment:
-      POSTGRES_USER: studio
-      POSTGRES_PASSWORD: studio
-      POSTGRES_DB: studio_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U studio -d studio_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      APP_ENV: development
 
-  adminer:
-    image: adminer:4
-    container_name: studio_adminer
-    restart: unless-stopped
-    ports:
-      - "8081:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      RENT_ADMIN_CHAT_ID: 576077782
 
-volumes:
-  postgres_data:
+      RENT_CARD_NUMBER: "2204 3204 4401 8966"
+      RENT_PRICE_PER_HOUR: 700
+      RENT_TIMEZONE: "Europe/Moscow"
+
+      ADMIN_PHONE: "+79214023791"
+      ADMIN_USERNAME: "@amadau"
+
+      DB_HOST: studio_postgres
+      DB_PORT: 5432
+      DB_USER: studio
+      DB_PASSWORD: studio
+      DB_NAME: studio_db
+      DB_SSLMODE: disable
+      DB_MAX_OPEN_CONNS: 25
+      DB_MAX_IDLE_CONNS: 10
+      DB_CONN_MAX_LIFETIME: 5m
+
+      TELEGRAM_BOT_TOKEN: 8916902619:AAEa2tTOezZgh3WWZac7MmFcWks0D-hKyxk
+      TELEGRAM_BOT_DEBUG: false
+      TELEGRAM_BOT_TIMEOUT: 60
+
+networks:
+  studio-bot-network:
+    external: true
+    name: studio-bot-network
+

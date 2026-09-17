@@ -81,17 +81,21 @@ type RentAdminCancelProps struct {
 
 // RentConfirmedProps — подтверждение клиенту.
 type RentConfirmedProps struct {
-	DateLabel  string
-	TimeRange  string
-	HoursLabel string
+	DateLabel     string
+	TimeRange     string
+	HoursLabel    string
+	AdminUsername string
+	AdminPhone    string
 }
 
 // RentCanceledProps — подтверждение клиенту.
 type RentCanceledProps struct {
-	DateLabel  string
-	TimeRange  string
-	HoursLabel string
-	IsPaid     bool
+	DateLabel     string
+	TimeRange     string
+	HoursLabel    string
+	IsPaid        bool
+	AdminUsername string
+	AdminPhone    string
 }
 
 // RentItemProps — строка аренды в списках.

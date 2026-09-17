@@ -54,7 +54,7 @@ func New(db *sqlx.DB) *Repo {
 	return &Repo{db: db}
 }
 
-func (r *Repo) Create(ctx context.Context, u *domain.TelegramUser) (*domain.TelegramUser, error) {
+func (r *Repo) Create(ctx context.Context, u domain.TelegramUser) (result domain.TelegramUser, err error) {
 	db := database.GetDB(ctx, r.db)
 
 	if u.Id == uuid.Nil {
@@ -64,53 +64,59 @@ func (r *Repo) Create(ctx context.Context, u *domain.TelegramUser) (*domain.Tele
 	u.CreatedAt = now
 	u.UpdatedAt = now
 
-	if _, err := db.NamedExecContext(ctx, createQuery, converter.ToModel(u)); err != nil {
-		return nil, errors.Wrap(err, "create telegram user")
+	_, err = db.NamedExecContext(ctx, createQuery, converter.ToModel(u))
+	if err != nil {
+		err = errors.Wrapf(err, "failed to create telegram user with id %s", u.Id)
+		return
 	}
-	return u, nil
+	result = u
+	return
 }
 
-func (r *Repo) GetByID(ctx context.Context, id uuid.UUID) (*domain.TelegramUser, error) {
+func (r *Repo) GetByID(ctx context.Context, id uuid.UUID) (result domain.TelegramUser, err error) {
 	db := database.GetDB(ctx, r.db)
 
 	var m model.TelegramUserModel
-	if err := db.GetContext(ctx, &m, getByIDQuery, id); err != nil {
+	err = db.GetContext(ctx, &m, getByIDQuery, id)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrNotFound
+			err = domain.ErrNotFound
+			return
 		}
-		return nil, errors.Wrap(err, "get telegram user by id")
+		err = errors.Wrapf(err, "get telegram user by id %s", id)
+		return
 	}
-	return converter.ToDomain(&m), nil
+
+	result = converter.ToDomain(m)
+	return
 }
 
-func (r *Repo) GetByTelegramID(ctx context.Context, telegramID int64) (*domain.TelegramUser, error) {
+func (r *Repo) GetByTelegramID(ctx context.Context, telegramID int64) (result domain.TelegramUser, err error) {
 	db := database.GetDB(ctx, r.db)
 
 	var m model.TelegramUserModel
-	if err := db.GetContext(ctx, &m, getByTelegramIDQuery, telegramID); err != nil {
+	err = db.GetContext(ctx, &m, getByTelegramIDQuery, telegramID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrNotFound
+			err = domain.ErrNotFound
+			return
 		}
-		return nil, errors.Wrap(err, "get telegram user by telegram_id")
+		err = errors.Wrapf(err, "get telegram user by telegram id %d", telegramID)
+		return
 	}
-	return converter.ToDomain(&m), nil
+
+	result = converter.ToDomain(m)
+	return
 }
 
-func (r *Repo) Update(ctx context.Context, u *domain.TelegramUser) (*domain.TelegramUser, error) {
+func (r *Repo) Update(ctx context.Context, u domain.TelegramUser) (result domain.TelegramUser, err error) {
 	db := database.GetDB(ctx, r.db)
 
 	u.UpdatedAt = time.Now()
-	res, err := db.NamedExecContext(ctx, updateQuery, converter.ToModel(u))
-	if err != nil {
-		return nil, errors.Wrap(err, "update telegram user")
-	}
 
-	affected, err := res.RowsAffected()
+	_, err = db.NamedExecContext(ctx, updateQuery, converter.ToModel(u))
 	if err != nil {
-		return nil, errors.Wrap(err, "update telegram user rows affected")
+		err = errors.Wrapf(err, "update telegram user %s", u.Username)
 	}
-	if affected == 0 {
-		return nil, domain.ErrNotFound
-	}
-	return u, nil
+	return
 }

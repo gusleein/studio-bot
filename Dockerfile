@@ -24,6 +24,7 @@ WORKDIR /app
 
 COPY --from=builder /app/bin/studio-api ./studio-api
 COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/templates ./templates
 
 RUN addgroup -g 1001 -S studio && \
     adduser -u 1001 -S studio -G studio && \

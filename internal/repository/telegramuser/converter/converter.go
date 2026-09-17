@@ -5,8 +5,8 @@ import (
 	"github.com/yourstudio/studio-bot/internal/repository/telegramuser/model"
 )
 
-func ToDomain(m *model.TelegramUserModel) *domain.TelegramUser {
-	return &domain.TelegramUser{
+func ToDomain(m model.TelegramUserModel) domain.TelegramUser {
+	return domain.TelegramUser{
 		Id:         m.ID,
 		TelegramId: m.TelegramID,
 		Username:   m.Username,
@@ -18,8 +18,8 @@ func ToDomain(m *model.TelegramUserModel) *domain.TelegramUser {
 	}
 }
 
-func ToModel(u *domain.TelegramUser) *model.TelegramUserModel {
-	return &model.TelegramUserModel{
+func ToModel(u domain.TelegramUser) model.TelegramUserModel {
+	return model.TelegramUserModel{
 		ID:         u.Id,
 		TelegramID: u.TelegramId,
 		Username:   u.Username,

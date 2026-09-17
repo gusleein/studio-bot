@@ -7,8 +7,8 @@ import (
 	"github.com/yourstudio/studio-bot/internal/repository/client/model"
 )
 
-func ToDomain(row *model.ClientWithUserRow) *domain.Client {
-	c := &domain.Client{
+func ToDomain(row model.ClientWithUserRow) domain.Client {
+	c := domain.Client{
 		ID: row.ID,
 		TgUser: domain.TelegramUser{
 			Id:         row.UserID,
@@ -31,8 +31,8 @@ func ToDomain(row *model.ClientWithUserRow) *domain.Client {
 	return c
 }
 
-func ToModel(c *domain.Client) *model.ClientModel {
-	m := &model.ClientModel{
+func ToModel(c domain.Client) model.ClientModel {
+	m := model.ClientModel{
 		ID:             c.ID,
 		TelegramUserID: c.TgUser.Id,
 		Notes:          c.Notes,

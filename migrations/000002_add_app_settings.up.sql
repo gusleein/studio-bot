@@ -19,20 +19,27 @@ VALUES ('opening_hours', '{
 }');
 
 INSERT INTO app_settings (key, value) 
-VALUES ('rent_prices_per_hour', '{
-    "1": 700,
-    "2": 1400,
-    "3": 2100,
-    "4": 2800,
-    "5": 3500,
-    "6": 4200,
-    "7": 4900,
-    "8": 5600,
-}');
-
-INSERT INTO app_settings (key, value) 
 VALUES ('custom_prices', '[
     {
+        "type": "base",
+        "days_of_week": "monday,tuesday,wednesday,thursday,friday",
+        "start_time": "10:00",
+        "end_time": "22:00",
+        "price": 700,
+        "name": "Base",
+        "description": "Base price for the regular hours."
+    },
+    {
+        "type": "base",
+        "days_of_week": "saturday,sunday",
+        "start_time": "10:00",
+        "end_time": "22:00",
+        "price": 1000,
+        "name": "Base",
+        "description": "Base price for the weekend hours."
+    },
+    {
+        "type": "early_bird",
         "days_of_week": "monday,tuesday,wednesday,thursday,friday",
         "start_time": "10:00",
         "end_time": "14:00",
@@ -41,6 +48,7 @@ VALUES ('custom_prices', '[
         "description": "Early Bird is a special price for the early morning hours."
     },
     {
+        "type": "regular",
         "days_of_week": "monday,tuesday,wednesday,thursday,friday",
         "start_time": "14:00",
         "end_time": "22:00",
@@ -49,6 +57,7 @@ VALUES ('custom_prices', '[
         "description": "Regular is a special price for the regular hours."
     },
     {
+        "type": "weekend_early_bird",
         "days_of_week": "saturday,sunday",
         "start_time": "10:00",
         "end_time": "14:00",
@@ -57,6 +66,7 @@ VALUES ('custom_prices', '[
         "description": "Weekend is a special price for the weekend hours."
     },
     {
+        "type": "weekend",
         "days_of_week": "saturday,sunday",
         "start_time": "14:00",
         "end_time": "22:00",

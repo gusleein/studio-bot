@@ -9,6 +9,14 @@ import (
 	"github.com/yourstudio/studio-bot/internal/domain"
 )
 
+type AppSettingsService interface {
+	Get(ctx context.Context) (domain.AppSettings, error)
+	UpdateAppName(ctx context.Context, appName string) error
+	UpdateOpeningHours(ctx context.Context, openingHours domain.OpeningHours) error
+	UpdateCustomPrices(ctx context.Context, customPrices []domain.CustomPrice) error
+	UpdateBotAdmins(ctx context.Context, botAdmins []domain.BotAdmin) error
+}
+
 // ClientUpsert — данные Telegram при /start.
 type ClientUpsert struct {
 	TelegramID int64
@@ -19,8 +27,8 @@ type ClientUpsert struct {
 
 // ClientService — регистрация клиента и Telegram-профиля.
 type ClientService interface {
-	GetOrCreate(ctx context.Context, in ClientUpsert) (*domain.Client, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*domain.Client, error)
+	GetOrCreate(ctx context.Context, in ClientUpsert) (domain.Client, error)
+	GetByID(ctx context.Context, id uuid.UUID) (domain.Client, error)
 	SavePhone(ctx context.Context, telegramID int64, phone string) error
 }
 

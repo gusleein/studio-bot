@@ -98,6 +98,7 @@ func (h *Handler) handleContact(ctx context.Context, msg *tgbotapi.Message) {
 
 	h.sendWelcome(msg.Chat.ID, from.FirstName, tgbotapi.NewRemoveKeyboard(true))
 }
+
 func (h *Handler) requestPhone(chatID int64) {
 	h.send(chatID, "📱 Чтобы продолжить, поделитесь номером телефона — нажмите кнопку ниже.", phoneKeyboard())
 }

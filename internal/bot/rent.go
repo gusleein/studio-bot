@@ -72,6 +72,9 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 		!strings.HasPrefix(payload, "cancel:") {
 		return
 	}
+
+	var client domain.Client
+
 	if strings.HasPrefix(payload, "confirm:") {
 		id, err := uuid.Parse(strings.TrimPrefix(payload, "confirm:"))
 		if err != nil {
@@ -89,12 +92,12 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 		client, err := h.clients.GetByID(ctx, rent.ClientID)
 		if err != nil {
 			h.log.Error("клиент для подтверждённой аренды не найден", zap.Error(err))
-			client = &domain.Client{}
+			client = domain.Client{}
 		} else {
-			h.renderAndSend(client.TgUser.TelegramId, "rent_confirmed", toConfirmedProps(rent, h.loc))
+			h.renderAndSend(client.TgUser.TelegramId, "rent_confirmed", toConfirmedProps(rent, h.settings.AdminUsername, h.settings.AdminPhone, h.loc))
 		}
 
-		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_done", toAdminDoneProps(rent, client, h.loc))
+		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_done", toAdminDoneProps(rent, &client, h.loc))
 	}
 
 	if strings.HasPrefix(payload, "cancel:") {
@@ -118,14 +121,15 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 		client, err := h.clients.GetByID(ctx, rent.ClientID)
 		if err != nil {
 			h.log.Error("клиент для отмены аренды не найден", zap.Error(err))
-			client = &domain.Client{}
+			client = domain.Client{}
 		} else {
-			h.renderAndSend(client.TgUser.TelegramId, "rent_canceled", toCanceledProps(rent, h.loc))
+			h.renderAndSend(client.TgUser.TelegramId, "rent_canceled", toCanceledProps(rent, h.settings.AdminUsername, h.settings.AdminPhone, h.loc))
 		}
 
-		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_cancel", toAdminCanceledProps(rent, client, h.loc))
+		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_cancel", toAdminCanceledProps(rent, &client, h.loc))
 	}
 
+	h.renderAndSend(client.TgUser.TelegramId, "rent_menu", RentMenuProps{})
 }
 
 func (h *Handler) handleReceipt(ctx context.Context, msg *tgbotapi.Message) {
@@ -151,10 +155,10 @@ func (h *Handler) handleReceipt(ctx context.Context, msg *tgbotapi.Message) {
 	client, err := h.clients.GetByID(ctx, sess.ClientID)
 	if err != nil {
 		h.log.Error("клиент для чека не найден", zap.Error(err))
-		client = &domain.Client{TgUser: domain.TelegramUser{FirstName: msg.From.FirstName, Username: msg.From.UserName}}
+		client = domain.Client{TgUser: domain.TelegramUser{FirstName: msg.From.FirstName, Username: msg.From.UserName}}
 	}
 
-	h.renderAndSend(h.settings.AdminChatID, "rent_admin_confirm", toAdminConfirmProps(rent, client, h.loc))
+	h.renderAndSend(h.settings.AdminChatID, "rent_admin_confirm", toAdminConfirmProps(rent, &client, h.loc))
 	h.renderAndSend(msg.Chat.ID, "rent_receipt_sent", RentReceiptSentProps{
 		DateLabel: formatDate(rent.StartsAt.In(h.loc)),
 		TimeRange: formatTimeRange(rent.StartsAt.In(h.loc), rent.EndsAt.In(h.loc)),
@@ -403,7 +407,7 @@ func (h *Handler) requireClient(ctx context.Context, from *tgbotapi.User, chatID
 		h.requestPhone(chatID)
 		return nil, false
 	}
-	return client, true
+	return &client, true
 }
 
 func overlaps(start, end time.Time, busy []*domain.Rent) bool {
@@ -446,24 +450,28 @@ func toItemProps(r *domain.Rent, loc *time.Location) RentItemProps {
 	}
 }
 
-func toConfirmedProps(r *domain.Rent, loc *time.Location) RentConfirmedProps {
+func toConfirmedProps(r *domain.Rent, adminUsername, adminPhone string, loc *time.Location) RentConfirmedProps {
 	start := r.StartsAt.In(loc)
 	end := r.EndsAt.In(loc)
 	return RentConfirmedProps{
-		DateLabel:  formatDate(start),
-		TimeRange:  formatTimeRange(start, end),
-		HoursLabel: hoursLabel(r.PaidDuration),
+		DateLabel:     formatDate(start),
+		TimeRange:     formatTimeRange(start, end),
+		HoursLabel:    hoursLabel(r.PaidDuration),
+		AdminUsername: adminUsername,
+		AdminPhone:    adminPhone,
 	}
 }
 
-func toCanceledProps(r *domain.Rent, loc *time.Location) RentCanceledProps {
+func toCanceledProps(r *domain.Rent, adminUsername, adminPhone string, loc *time.Location) RentCanceledProps {
 	start := r.StartsAt.In(loc)
 	end := r.EndsAt.In(loc)
 	return RentCanceledProps{
-		DateLabel:  formatDate(start),
-		TimeRange:  formatTimeRange(start, end),
-		HoursLabel: hoursLabel(r.PaidDuration),
-		IsPaid:     r.IsPaid,
+		DateLabel:     formatDate(start),
+		TimeRange:     formatTimeRange(start, end),
+		HoursLabel:    hoursLabel(r.PaidDuration),
+		IsPaid:        r.IsPaid,
+		AdminUsername: adminUsername,
+		AdminPhone:    adminPhone,
 	}
 }
 

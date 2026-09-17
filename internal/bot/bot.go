@@ -3,8 +3,8 @@ package bot
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -36,9 +36,15 @@ func New(
 	}
 	bot.Debug = debug
 
-	_, filename, _, _ := runtime.Caller(0)
-	projectRoot := filepath.Join(filepath.Dir(filename), "../..")
-	templatesDir := filepath.Join(projectRoot, "internal/bot/templates")
+	executablePath, err := os.Executable()
+	if err != nil {
+		err = fmt.Errorf("get executable path: %w", err)
+		return nil, err
+	}
+
+	executableDir := filepath.Dir(executablePath)
+	templatesDir := filepath.Join(executableDir, "templates")
+	
 	botviewRenderer := botview.New(templatesDir)
 
 	loc, err := time.LoadLocation(settings.Location)

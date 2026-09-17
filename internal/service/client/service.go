@@ -34,32 +34,35 @@ func New(
 	return &Service{db: db, users: users, clients: clients, log: log}
 }
 
-func (s *Service) GetOrCreate(ctx context.Context, in service.ClientUpsert) (*domain.Client, error) {
+func (s *Service) GetOrCreate(ctx context.Context, in service.ClientUpsert) (result domain.Client, err error) {
 	user, err := s.users.GetByTelegramID(ctx, in.TelegramID)
 	if err != nil && !errors.Is(err, domain.ErrNotFound) {
-		return nil, fmt.Errorf("поиск telegram user: %w", err)
+		err = fmt.Errorf("failed to get user by telegram id: %w", err)
+		return
 	}
 
 	if errors.Is(err, domain.ErrNotFound) {
-		if err := database.WithTx(ctx, s.db, func(ctx context.Context) error {
-			created, err := s.users.Create(ctx, &domain.TelegramUser{
+		err = database.WithTx(ctx, s.db, func(ctx context.Context) (err1 error) {
+			created, err1 := s.users.Create(ctx, domain.TelegramUser{
 				TelegramId: in.TelegramID,
 				Username:   in.Username,
 				FirstName:  in.FirstName,
 				LastName:   in.LastName,
 			})
-			if err != nil {
-				return fmt.Errorf("создание telegram user: %w", err)
+			if err1 != nil {
+				return fmt.Errorf("создание telegram user: %w", err1)
 			}
+
 			user = created
 
-			_, err = s.clients.Create(ctx, &domain.Client{TgUser: *created})
-			if err != nil {
-				return fmt.Errorf("создание клиента: %w", err)
+			_, err1 = s.clients.Create(ctx, domain.Client{TgUser: created})
+			if err1 != nil {
+				return fmt.Errorf("создание клиента: %w", err1)
 			}
-			return nil
-		}); err != nil {
-			return nil, err
+			return
+		})
+		if err != nil {
+			return
 		}
 
 		s.log.Info("создан клиент",
@@ -70,41 +73,46 @@ func (s *Service) GetOrCreate(ctx context.Context, in service.ClientUpsert) (*do
 		user.Username = in.Username
 		user.FirstName = in.FirstName
 		user.LastName = in.LastName
-		if _, err := s.users.Update(ctx, user); err != nil {
-			return nil, fmt.Errorf("обновление telegram user: %w", err)
+
+		if _, err = s.users.Update(ctx, user); err != nil {
+			err = fmt.Errorf("обновление telegram user: %w", err)
+			return
 		}
 	}
 
 	client, err := s.clients.GetByTelegramID(ctx, in.TelegramID)
 	if err != nil {
 		if !errors.Is(err, domain.ErrNotFound) {
-			return nil, fmt.Errorf("получение клиента: %w", err)
+			err = fmt.Errorf("failed to get client by telegram id: %w", err)
+			return
 		}
-		client, err = s.clients.Create(ctx, &domain.Client{TgUser: *user})
+
+		client, err = s.clients.Create(ctx, domain.Client{TgUser: user})
 		if err != nil {
-			return nil, fmt.Errorf("создание клиента для существующего user: %w", err)
+			err = fmt.Errorf("failed to create client: %w", err)
+			return
 		}
 	}
-	return client, nil
+
+	result = client
+	return
 }
 
-func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*domain.Client, error) {
-	client, err := s.clients.GetByID(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("получение клиента: %w", err)
-	}
-	return client, nil
+func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (result domain.Client, err error) {
+	result, err = s.clients.GetByID(ctx, id)
+	return
 }
 
-func (s *Service) SavePhone(ctx context.Context, telegramID int64, phone string) error {
+func (s *Service) SavePhone(ctx context.Context, telegramID int64, phone string) (err error) {
 	user, err := s.users.GetByTelegramID(ctx, telegramID)
 	if err != nil {
-		return fmt.Errorf("поиск telegram user: %w", err)
+		err = fmt.Errorf("failed to get user by telegram id: %w", err)
+		return
 	}
 
 	user.Phone = phone
 	if _, err := s.users.Update(ctx, user); err != nil {
-		return fmt.Errorf("сохранение телефона: %w", err)
+		err = fmt.Errorf("failed to update user: %w", err)
 	}
-	return nil
+	return
 }
