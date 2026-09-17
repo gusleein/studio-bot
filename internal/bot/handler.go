@@ -24,18 +24,20 @@ type Settings struct {
 
 // Handler — основной обработчик обновлений Telegram-бота.
 type Handler struct {
-	bot      *tgbotapi.BotAPI
-	clients  service.ClientService
-	rents    service.RentService
-	log      *logger.Logger
-	renderer *botview.Renderer
-	sessions *sessionStore
-	settings Settings
-	loc      *time.Location
+	bot         *tgbotapi.BotAPI
+	appSettings service.AppSettingsService
+	clients     service.ClientService
+	rents       service.RentService
+	log         *logger.Logger
+	renderer    *botview.Renderer
+	sessions    *sessionStore
+	settings    Settings
+	loc         *time.Location
 }
 
 func NewHandler(
 	bot *tgbotapi.BotAPI,
+	appSettings service.AppSettingsService,
 	clients service.ClientService,
 	rents service.RentService,
 	log *logger.Logger,
@@ -44,14 +46,15 @@ func NewHandler(
 	loc *time.Location,
 ) *Handler {
 	return &Handler{
-		bot:      bot,
-		clients:  clients,
-		rents:    rents,
-		log:      log,
-		renderer: renderer,
-		sessions: newSessionStore(),
-		settings: settings,
-		loc:      loc,
+		bot:         bot,
+		appSettings: appSettings,
+		clients:     clients,
+		rents:       rents,
+		log:         log,
+		renderer:    renderer,
+		sessions:    newSessionStore(),
+		settings:    settings,
+		loc:         loc,
 	}
 }
 

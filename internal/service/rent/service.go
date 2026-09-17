@@ -138,3 +138,18 @@ func (s *Service) CancelUnpaid(ctx context.Context, id uuid.UUID) error {
 	}
 	return nil
 }
+func (s *Service) UpcomingByClient(ctx context.Context, clientID uuid.UUID, from, to time.Time) ([]*domain.Rent, error) {
+	items, err := s.rents.ListUpcomingByClientID(ctx, clientID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("предстоящие аренды клиента: %w", err)
+	}
+	return items, nil
+}
+
+func (s *Service) UpcomingAll(ctx context.Context, from, to time.Time) ([]*domain.Rent, error) {
+	items, err := s.rents.ListActiveInRange(ctx, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("предстоящие аренды: %w", err)
+	}
+	return items, nil
+}

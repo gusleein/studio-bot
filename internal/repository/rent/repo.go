@@ -76,6 +76,15 @@ const (
 			notes          = :notes,
 			updated_at     = :updated_at
 		WHERE id = :id`
+
+	listUpcomingByClientIDQuery = `
+		SELECT` + rentColumns + `
+		FROM rents
+		WHERE client_id = $1
+			AND is_cancelled = FALSE
+			AND starts_at >= $2
+			AND starts_at < $3
+		ORDER BY starts_at ASC`
 )
 
 type Repo struct {
@@ -177,4 +186,18 @@ func (r *Repo) Update(ctx context.Context, rent *domain.Rent) (*domain.Rent, err
 		return nil, domain.ErrNotFound
 	}
 	return rent, nil
+}
+func (r *Repo) ListUpcomingByClientID(ctx context.Context, clientID uuid.UUID, from, to time.Time) ([]*domain.Rent, error) {
+	db := database.GetDB(ctx, r.db)
+
+	var rows []model.RentModel
+	if err := db.SelectContext(ctx, &rows, listUpcomingByClientIDQuery, clientID, from, to); err != nil {
+		return nil, errors.Wrap(err, "list upcoming rents by client_id")
+	}
+
+	result := make([]*domain.Rent, len(rows))
+	for i := range rows {
+		result[i] = converter.ToDomain(&rows[i])
+	}
+	return result, nil
 }

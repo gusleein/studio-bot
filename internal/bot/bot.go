@@ -25,6 +25,7 @@ func New(
 	token string,
 	debug bool,
 	timeout int,
+	appSettings service.AppSettingsService,
 	clients service.ClientService,
 	rents service.RentService,
 	logger *logger.Logger,
@@ -44,7 +45,7 @@ func New(
 
 	executableDir := filepath.Dir(executablePath)
 	templatesDir := filepath.Join(executableDir, "templates")
-	
+
 	botviewRenderer := botview.New(templatesDir)
 
 	loc, err := time.LoadLocation(settings.Location)
@@ -58,6 +59,7 @@ func New(
 		timeout: timeout,
 		handler: NewHandler(
 			bot,
+			appSettings,
 			clients,
 			rents,
 			logger,

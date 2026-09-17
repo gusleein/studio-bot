@@ -89,7 +89,7 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 			return
 		}
 
-		client, err := h.clients.GetByID(ctx, rent.ClientID)
+		client, err = h.clients.GetByID(ctx, rent.ClientID)
 		if err != nil {
 			h.log.Error("клиент для подтверждённой аренды не найден", zap.Error(err))
 			client = domain.Client{}
@@ -118,7 +118,7 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 			return
 		}
 
-		client, err := h.clients.GetByID(ctx, rent.ClientID)
+		client, err = h.clients.GetByID(ctx, rent.ClientID)
 		if err != nil {
 			h.log.Error("клиент для отмены аренды не найден", zap.Error(err))
 			client = domain.Client{}
@@ -129,7 +129,9 @@ func (h *Handler) handleAdminCallback(ctx context.Context, cq *tgbotapi.Callback
 		h.renderAndEdit(cq.Message.Chat.ID, cq.Message.MessageID, "rent_admin_cancel", toAdminCanceledProps(rent, &client, h.loc))
 	}
 
-	h.renderAndSend(client.TgUser.TelegramId, "rent_menu", RentMenuProps{})
+	if client.TgUser.TelegramId != 0 {
+		h.renderAndSend(client.TgUser.TelegramId, "rent_menu", RentMenuProps{})
+	}
 }
 
 func (h *Handler) handleReceipt(ctx context.Context, msg *tgbotapi.Message) {

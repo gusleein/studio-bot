@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/yourstudio/studio-bot/internal/service"
+	appsettings2 "github.com/yourstudio/studio-bot/internal/service/appsettings"
 	client2 "github.com/yourstudio/studio-bot/internal/service/client"
 	rent2 "github.com/yourstudio/studio-bot/internal/service/rent"
 	"sync"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/yourstudio/studio-bot/internal/config"
 	"github.com/yourstudio/studio-bot/internal/repository"
+	"github.com/yourstudio/studio-bot/internal/repository/appsettings"
 	"github.com/yourstudio/studio-bot/internal/repository/client"
 	"github.com/yourstudio/studio-bot/internal/repository/payment"
 	"github.com/yourstudio/studio-bot/internal/repository/product"
@@ -41,10 +43,14 @@ type serviceProvider struct {
 	paymentRepoOnce sync.Once
 	paymentRepo     repository.PaymentRepository
 
+	appSettingsRepo repository.AppSettingsRepository
+
 	clientsSrvOnce sync.Once
 	clientsService service.ClientService
 
 	rentService service.RentService
+
+	appSettingsService service.AppSettingsService
 }
 
 func newServiceProvider(cfg *config.Config, db *sqlx.DB, log *logger.Logger) *serviceProvider {
@@ -98,4 +104,18 @@ func (sp *serviceProvider) RentService() service.RentService {
 		sp.rentService = rent2.New(sp.RentRepo(), sp.log)
 	}
 	return sp.rentService
+}
+
+func (sp *serviceProvider) AppSettingsService() service.AppSettingsService {
+	if sp.appSettingsService == nil {
+		sp.appSettingsService = appsettings2.New(sp.db, sp.AppSettingsRepository(), sp.log)
+	}
+	return sp.appSettingsService
+}
+
+func (sp *serviceProvider) AppSettingsRepository() repository.AppSettingsRepository {
+	if sp.appSettingsRepo == nil {
+		sp.appSettingsRepo = appsettings.NewRepo(sp.db)
+	}
+	return sp.appSettingsRepo
 }

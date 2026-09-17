@@ -107,6 +107,7 @@ func (a *App) initBot(_ context.Context) error {
 	a.bot, err = bot.New(a.cfg.Bot.Token,
 		a.cfg.Bot.Debug,
 		a.cfg.Bot.Timeout,
+		a.serviceProvider.AppSettingsService(),
 		a.serviceProvider.ClientsService(),
 		a.serviceProvider.RentService(),
 		a.log,

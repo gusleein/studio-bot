@@ -25,8 +25,7 @@ func NewRepo(db *sqlx.DB) *Repo {
 func (r *Repo) GetAllAppSettings(ctx context.Context) (result []model.AppSettings, err error) {
 	result = make([]model.AppSettings, 0)
 
-	err = r.db.GetContext(ctx, &result, `SELECT * FROM app_settings`)
-	if err != nil {
+	if err = r.db.SelectContext(ctx, &result, `SELECT * FROM app_settings`); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = domain.ErrNotFound
 			return

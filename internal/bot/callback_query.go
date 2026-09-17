@@ -25,6 +25,8 @@ func (h *Handler) handleCallbackQuery(ctx context.Context, cq *tgbotapi.Callback
 	switch parts[0] {
 	case "rent":
 		h.handleRentCallback(ctx, cq, parts[1])
+	case "adminrent":
+		h.handleAdminRentCallback(ctx, cq, parts[1])
 	case "admin":
 		h.handleAdminCallback(ctx, cq, parts[1])
 	default:

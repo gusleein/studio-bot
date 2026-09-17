@@ -1,0 +1,23 @@
+@props RentStartProps
+
+@template
+🕐 <b>Выберите время начала</b>
+
+Дата: <b>{DateLabel}</b>
+Длительность: <b>{HoursLabel}</b>
+
+{#if IsEmpty}
+😔 На эту дату нет свободных слотов. Выберите другой день.
+{/if}
+
+@keyboard
+{#each Rows as row}
+[row]
+{#each row.Slots as slot}
+[btn callback="{slot.Callback}"] {slot.Label} [/btn]
+{/each}
+[/row]
+{/each}
+[row]
+[btn callback="adminrent:hours_back"] ◀ К длительности [/btn]
+[/row]

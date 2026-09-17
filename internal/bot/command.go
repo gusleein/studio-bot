@@ -35,6 +35,8 @@ func (h *Handler) handleMessage(ctx context.Context, msg *tgbotapi.Message) {
 		h.handleStart(ctx, msg)
 	case "rent":
 		h.handleRent(ctx, msg)
+	case "admin":
+		h.handleAdmin(ctx, msg)
 	default:
 		h.send(msg.Chat.ID, "❓ Неизвестная команда. Попробуйте /start", nil)
 	}

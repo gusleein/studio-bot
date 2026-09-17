@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS app_settings (
 );
 
 INSERT INTO app_settings (key, value) 
-VALUES ('app_name', 'Studio KAIFA Bot');
+VALUES ('app_name', '"Studio KAIFA Bot"');
 
 INSERT INTO app_settings (key, value) 
 VALUES ('opening_hours', '{
@@ -82,7 +82,7 @@ VALUES ('bot_admins', '[
         "telegram_id": 329210636,
         "name": "Даня Марля",
         "phone": "+7 913 245 1578",
-        "username": "@mvrlya"
+        "username": "@mvrlya",
         "roles": ["admin", "owner", "producer"]
     },
     {
@@ -112,6 +112,6 @@ VALUES ('bot_admins', '[
         "phone": "+7 981 257 4213",
         "username": "",
         "roles": ["owner", "producer"]
-    },
+    }
 ]');
 

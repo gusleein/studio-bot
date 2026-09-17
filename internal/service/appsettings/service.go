@@ -14,7 +14,7 @@ import (
 type Service struct {
 	db              *sqlx.DB
 	appSettingsRepo repository.AppSettingsRepository
-	log             logger.Logger
+	log             *logger.Logger
 }
 
 var _ service.AppSettingsService = (*Service)(nil)
@@ -22,7 +22,7 @@ var _ service.AppSettingsService = (*Service)(nil)
 func New(
 	db *sqlx.DB,
 	appSettingsRepo repository.AppSettingsRepository,
-	log logger.Logger,
+	log *logger.Logger,
 ) *Service {
 	return &Service{
 		db:              db,

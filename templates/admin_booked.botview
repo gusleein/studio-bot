@@ -1,0 +1,18 @@
+@props AdminBookedProps
+
+@template
+✅ <b>Слот забронирован</b>
+
+📅 {DateLabel}
+🕐 {TimeRange}
+⏱ {HoursLabel}
+
+Бронь бесплатная, подтверждение не требуется.
+
+@keyboard
+[row]
+[btn callback="adminrent:menu"] ◀ Мои брони [/btn]
+[/row]
+[row]
+[btn callback="adminrent:book"] 🆕 Забронировать ещё [/btn]
+[/row]

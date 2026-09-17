@@ -1,0 +1,14 @@
+@props RentDatesProps
+
+@template
+📅 <b>Выберите дату брони</b>
+
+@keyboard
+{#each Days as day}
+[row]
+[btn callback="{day.Callback}"] {day.Label} [/btn]
+[/row]
+{/each}
+[row]
+[btn callback="adminrent:menu"] ◀ Отмена [/btn]
+[/row]

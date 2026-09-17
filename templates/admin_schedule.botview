@@ -1,0 +1,37 @@
+@props AdminScheduleProps
+
+@template
+{#if IsTeamView}
+📋 <b>Брони команды</b> (ближайшие 14 дней)
+{/if}
+{#if !IsTeamView}
+📋 <b>Ваши брони</b> (ближайшие 14 дней)
+{/if}
+
+{#if IsEmpty}
+Пока нет забронированных слотов.
+{/if}
+{#each Items as item}
+📅 {item.DateLabel}
+🕐 {item.TimeRange}
+⏱ {item.HoursLabel}
+{#if item.BookedBy}
+👤 {item.BookedBy}
+{/if}
+
+{/each}
+
+@keyboard
+[row]
+[btn callback="adminrent:book"] 🆕 Забронировать слот [/btn]
+[/row]
+{#if !IsTeamView}
+[row]
+[btn callback="adminrent:all"] 👥 Брони команды [/btn]
+[/row]
+{/if}
+{#if IsTeamView}
+[row]
+[btn callback="adminrent:menu"] ◀ Мои брони [/btn]
+[/row]
+{/if}

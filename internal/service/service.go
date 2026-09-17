@@ -42,4 +42,11 @@ type RentService interface {
 	ConfirmPaid(ctx context.Context, id uuid.UUID) (*domain.Rent, error)
 	CancelPaid(ctx context.Context, isPaid bool, id uuid.UUID) (*domain.Rent, error)
 	CancelUnpaid(ctx context.Context, id uuid.UUID) error
+	
+	// UpcomingByClient — предстоящие брони конкретного клиента в интервале [from, to).
+	UpcomingByClient(ctx context.Context, clientID uuid.UUID, from, to time.Time) ([]*domain.Rent, error)
+
+	// UpcomingAll — все предстоящие брони (любых клиентов) в интервале [from, to).
+	// Нужно для общего расписания команды.
+	UpcomingAll(ctx context.Context, from, to time.Time) ([]*domain.Rent, error)
 }

@@ -1,0 +1,16 @@
+@props RentHoursProps
+
+@template
+🕐 <b>Выберите длительность</b>
+
+Дата: <b>{DateLabel}</b>
+
+@keyboard
+{#each Hours as hour}
+[row]
+[btn callback="{hour.Callback}"] {hour.Label} [/btn]
+[/row]
+{/each}
+[row]
+[btn callback="adminrent:menu"] ◀ Отмена [/btn]
+[/row]

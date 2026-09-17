@@ -41,6 +41,7 @@ type RentRepository interface {
 	ListActiveInRange(ctx context.Context, from, to time.Time) ([]*domain.Rent, error)
 	Create(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
 	Update(ctx context.Context, rent *domain.Rent) (*domain.Rent, error)
+	ListUpcomingByClientID(ctx context.Context, clientID uuid.UUID, from, to time.Time) ([]*domain.Rent, error)
 }
 
 // ProductRepository — каталог доп. товаров.
